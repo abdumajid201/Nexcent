@@ -39,7 +39,9 @@ Build the frontend with `npm run build`. Start the API in production with `npm s
 
 ## Deployment configuration
 
-Configure these environment variables on the backend host:
+This repository includes `render.yaml` for a single Render Web Service that serves both the built React site and the Express API. In Render, create a Blueprint from this GitHub repository and enter the admin/manager credentials when prompted. Render generates `JWT_SECRET` automatically. The configured free plan sleeps after 15 minutes without traffic, so the first request after idle can take longer.
+
+For a manual Render setup, configure these environment variables:
 
 - `PORT`: supplied by most hosting providers.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: admin account credentials.
@@ -47,6 +49,6 @@ Configure these environment variables on the backend host:
 - `JWT_SECRET`: a private, randomly generated signing key.
 - `CORS_ORIGIN`: exact frontend origin, such as `https://example.com`.
 
-If frontend and backend use different domains, set `VITE_API_BASE_URL` to the backend origin when building the frontend. This variable is public in the built site; never put secrets in `VITE_*` variables. Serve the deployed site over HTTPS.
+The Blueprint serves the frontend and API from the same domain, so no `VITE_API_BASE_URL` value is needed. If you later split them across domains, set `VITE_API_BASE_URL` to the backend origin when building the frontend and set `CORS_ORIGIN` to the exact frontend origin. This variable is public in the built site; never put secrets in `VITE_*` variables. Serve the deployed site over HTTPS.
 
 The site content and image assets are currently stored in `backend/src/data/homepage.js` and `backend/public/`. Login uses the configured environment accounts; user registration and a database are not included.
