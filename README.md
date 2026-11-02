@@ -39,9 +39,15 @@ Build the frontend with `npm run build`. Start the API in production with `npm s
 
 ## Deployment configuration
 
-This repository includes `render.yaml` for a single Render Web Service that serves both the built React site and the Express API. In Render, create a Blueprint from this GitHub repository and enter the admin/manager credentials when prompted. Render generates `JWT_SECRET` automatically. The configured free plan sleeps after 15 minutes without traffic, so the first request after idle can take longer.
+This repository includes `render.yaml` for a single Render Web Service that serves both the built React site and the Express API. In Render, create a Blueprint from this GitHub repository and enter the admin/manager credentials when prompted. Render generates `JWT_SECRET` automatically. Frontend dev dependencies are explicitly installed during build because Vite is needed to produce the production bundle. The configured free plan sleeps after 15 minutes without traffic, so the first request after idle can take longer.
 
-For a manual Render setup, configure these environment variables:
+For a manual Render setup, use this build command so Vite is installed even when `NODE_ENV=production` is set:
+
+```sh
+npm ci && npm ci --prefix backend && npm ci --include=dev --prefix frontend && npm run build
+```
+
+Configure these environment variables:
 
 - `PORT`: supplied by most hosting providers.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: admin account credentials.
