@@ -20,7 +20,6 @@ try {
   if (error.code !== "ENOENT") throw error;
 }
 
-const port = Number(process.env.PORT) || 3000;
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174")
   .split(",")
   .map((origin) => origin.trim())
@@ -34,7 +33,9 @@ app.use(cors({
   origin(origin, callback) {
     // Allow server-to-server and local tools that don't send an Origin header.
     if (!origin || allowedOrigins.includes(origin) || origin === process.env.RENDER_EXTERNAL_URL) return callback(null, true);
-    return callback(new Error("Origin is not allowed by CORS"));
+    // Same-origin Vercel requests need no CORS headers; browsers will block
+    // cross-origin reads unless the origin is explicitly configured.
+    return callback(null, false);
   }
 }));
 app.use(express.json({ limit: "32kb" }));
@@ -149,6 +150,4 @@ app.use((error, _request, response, _next) => {
   return response.status(500).json({ error: "Internal server error" });
 });
 
-app.listen(port, () => {
-  console.log(`Landing page API listening on port ${port}`);
-});
+export default app;

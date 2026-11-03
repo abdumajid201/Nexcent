@@ -58,3 +58,16 @@ Configure these environment variables:
 The Blueprint serves the frontend and API from the same domain, so no `VITE_API_BASE_URL` value is needed. If you later split them across domains, set `VITE_API_BASE_URL` to the backend origin when building the frontend and set `CORS_ORIGIN` to the exact frontend origin. This variable is public in the built site; never put secrets in `VITE_*` variables. Serve the deployed site over HTTPS.
 
 The site content and image assets are currently stored in `backend/src/data/homepage.js` and `backend/public/`. Login uses the configured environment accounts; user registration and a database are not included.
+
+## Deploy to Vercel
+
+Import the repository with the Vercel project root set to the repository root (leave **Root Directory** as `.`) and select the **Services** application preset. `vercel.json` defines separate Vite and Express services and routes `/api/*` and `/assets/*` to the backend, with other requests going to the frontend. Vercel Services must be enabled for the account/project.
+
+Set these Production environment variables in Vercel before deploying:
+
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `JWT_SECRET` (use a long, randomly generated value)
+- `MANAGER_EMAIL` and `MANAGER_PASSWORD` (optional)
+
+The frontend and API use the same Vercel domain, so `VITE_API_BASE_URL` and `CORS_ORIGIN` are not needed. If you configure a custom domain, it works on the same origin too. If the frontend and API are later hosted on separate domains, configure `VITE_API_BASE_URL` at build time and set `CORS_ORIGIN` to the frontend's exact origin.
