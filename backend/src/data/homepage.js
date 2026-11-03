@@ -39,6 +39,7 @@ export const homepage = {
     ]
   },
   audienceSection: {
+    eyebrow: "Our community",
     heading: "Manage your entire community in a single system",
     subheading: "Who is Nexcent suitable for?"
   },
@@ -74,6 +75,7 @@ export const homepage = {
     }
   ],
   statsSection: {
+    eyebrow: "Achievements",
     headingLines: ["Helping a local", "business reinvent itself"],
     subheading: "We reached here with our hard work and dedication"
   },

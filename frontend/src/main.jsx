@@ -199,7 +199,7 @@ function App() {
 
       <section className="audience-section" id="services" aria-labelledby="audience-title">
         <div className="wrap">
-          <div className="section-heading centered"><h2 id="audience-title">{audienceSection.heading}</h2><p>{audienceSection.subheading}</p></div>
+          <div className="section-heading centered"><p className="section-eyebrow">{audienceSection.eyebrow}</p><h2 id="audience-title">{audienceSection.heading}</h2><p>{audienceSection.subheading}</p></div>
           <div className="audience-grid">{audiences.map((card) => <article className="audience-card" key={card.id}>
             <div className="audience-icon"><img src={assetUrl(card.iconUrl)} alt="" /></div>
             <h3>{card.title}</h3><p>{card.description}</p>
@@ -214,7 +214,7 @@ function App() {
       </section>)}
 
       <section className="stats-section" aria-label="Nexcent community statistics">
-        <div className="wrap stats-layout"><div className="stats-intro"><h2>{statsSection.headingLines[0]}<br /><span>{statsSection.headingLines[1]}</span></h2><p>{statsSection.subheading}</p></div>
+        <div className="wrap stats-layout"><div className="stats-intro"><p className="section-eyebrow">{statsSection.eyebrow}</p><h2>{statsSection.headingLines[0]}<br /><span>{statsSection.headingLines[1]}</span></h2><p>{statsSection.subheading}</p></div>
           <div className="stats-grid">{stats.map((stat) => <div className="stat-item" key={stat.id}><img className="stat-icon" src={assetUrl(stat.iconUrl)} alt="" /><div><strong>{stat.value}</strong><span>{stat.label}</span></div></div>)}</div>
         </div>
       </section>
