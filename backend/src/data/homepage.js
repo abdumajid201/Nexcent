@@ -21,8 +21,8 @@ export const homepage = {
       description: "Where to grow your business as a photographer: site or social media?",
       buttonLabel: "Register",
       buttonHref: "#contact",
-      imageUrl: "/assets/img/placeholder.svg",
-      imageAlt: "Nexcent illustration"
+      imageUrl: "/assets/img/hero.png",
+      imageAlt: "Nexcent membership platform illustration"
     }))
   },
   clients: {
