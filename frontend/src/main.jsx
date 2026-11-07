@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ArrowRight, Menu } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { A11y, Keyboard, Pagination } from "swiper/modules";
+import headerLogo from "../../header.svg";
 import "swiper/css";
 import "swiper/css/pagination";
 import "./styles.css";
 
 const apiBaseUrl = (import.meta.env.DEV ? "http://localhost:3000" : import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
-const assetUrl = (url = "") => /^https?:\/\//i.test(url) ? url : `${apiBaseUrl}${url}`;
+const assetUrl = (url = "") => /^https?:\/\//i.test(url) ? url : `${import.meta.env.DEV ? "" : apiBaseUrl}${url}`;
 
-function Brand({ name = "Nexcent", light = false }) {
+function Brand({ name = "Nexcent", light = false, imageOnly = false }) {
   return <a href="#home" className={`brand${light ? " brand-light" : ""}`} aria-label={`${name} home`}>
-    <svg className="brand-mark" viewBox="0 0 42 34" aria-hidden="true">
-      <path d="M2 2h16L10 15zM22 2h16l-8 13zM12 18h16l-8 13z" fill="#4caf4f" />
-      <path d="M20 2h16l-8 13zM2 18h16l-8 13zM30 18h10l-5 8z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-    <span>{name}</span>
+    {imageOnly ? <img className="brand-image" src={headerLogo} alt="" /> : <>
+      <svg className="brand-mark" viewBox="0 0 42 34" aria-hidden="true">
+        <path d="M2 2h16L10 15zM22 2h16l-8 13zM12 18h16l-8 13z" fill="#4caf4f" />
+        <path d="M20 2h16l-8 13zM2 18h16l-8 13zM30 18h10l-5 8z" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+      <span>{name}</span>
+    </>}
   </a>;
 }
 
@@ -102,8 +105,54 @@ function DashboardPage({ user, stats, onLogout }) {
   </main>;
 }
 
+const featureDetails = {
+  pixelgrade: {
+    intro: "A well-managed membership experience makes it easier for people to stay involved and for teams to focus on their community.",
+    points: ["Make renewals and member payments easier to manage.", "Keep member information organized in one place.", "Give your team more time to support the people behind the membership."]
+  },
+  "footer-design": {
+    intro: "A thoughtful footer helps visitors find the next step, whether they want to learn about your organization, get in touch, or join.",
+    points: ["Group important links into clear sections.", "Make contact and signup options easy to find.", "Keep the experience consistent across desktop and mobile."]
+  }
+};
+
+function FeatureModal({ feature, onDismiss }) {
+  const closeButtonRef = React.useRef(null);
+  const details = featureDetails[feature.id] || featureDetails.pixelgrade;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onDismiss();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+      previousFocus instanceof HTMLElement && previousFocus.focus();
+    };
+  }, [onDismiss]);
+
+  return <div className="feature-modal-backdrop" onMouseDown={(event) => {
+    if (event.target === event.currentTarget) onDismiss();
+  }}>
+    <section className="feature-modal" role="dialog" aria-modal="true" aria-labelledby="feature-modal-title" tabIndex={-1}>
+      <button className="feature-modal-close" ref={closeButtonRef} type="button" aria-label="Close details" onClick={onDismiss}><X size={21} /></button>
+      <p className="section-eyebrow">NEXCENT</p>
+      <h2 id="feature-modal-title">{feature.title}</h2>
+      <p className="feature-modal-intro">{details.intro}</p>
+      <ul>{details.points.map((point) => <li key={point}>{point}</li>)}</ul>
+      <button className="button feature-modal-done" type="button" onClick={onDismiss}>Got it</button>
+    </section>
+  </div>;
+}
+
 function App() {
   const [homeData, setHomeData] = useState(null);
+  const [activeFeature, setActiveFeature] = useState(null);
   const [apiUnavailable, setApiUnavailable] = useState(false);
   const [isLoginPage, setIsLoginPage] = useState(window.location.hash === "#login");
   const [user, setUser] = useState(null);
@@ -147,6 +196,27 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!homeData || !("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const targets = document.querySelectorAll(
+      "main > section, footer, .audience-card, .stat-item, .story-card, .footer-top > *"
+    );
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: "0px 0px -36px 0px" });
+    targets.forEach((target, index) => {
+      target.classList.add("reveal-on-scroll");
+      target.style.setProperty("--reveal-delay", `${Math.min(index % 4, 3) * 75}ms`);
+      observer.observe(target);
+    });
+    return () => observer.disconnect();
+  }, [homeData]);
+
   if (user && window.location.hash !== "#home") return <DashboardPage user={user} stats={homeData?.stats || []} onLogout={() => {
     sessionStorage.removeItem("nexcent_token");
     setUser(null);
@@ -164,7 +234,7 @@ function App() {
   return <>
     <header className="topbar">
       <div className="nav wrap">
-        <Brand name={homeData.brandName} />
+        <Brand name={homeData.brandName} imageOnly />
         <nav className="nav-links" aria-label="Main navigation">
           {navigation.map((item) => <a href={item.href} key={item.label}>{item.label}</a>)}
         </nav>
@@ -193,7 +263,13 @@ function App() {
         <div className="wrap">
           <h2 className="client-title" id="clients-title">{clients.heading}</h2>
           <p className="client-heading">{clients.subheading}</p>
-          <div className="client-logos">{clients.logos.map((logo, index) => <img className="client-logo" alt={logo.name} src={assetUrl(logo.imageUrl)} key={`${logo.name}-${index}`} />)}</div>
+          <div className="client-logo-window" aria-label={clients.heading}>
+            <div className="client-logos">
+              {[0, 1].map((copy) => <div className="client-logo-group" aria-hidden={copy ? "true" : undefined} key={copy}>
+                {clients.logos.map((logo, index) => <img className="client-logo" alt={copy ? "" : logo.name} src={assetUrl(logo.imageUrl)} key={`${logo.name}-${index}`} />)}
+              </div>)}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -209,7 +285,7 @@ function App() {
 
       {featureSections.map((feature, index) => <section className={`feature-section${index % 2 ? " feature-reverse" : ""}`} id="features" key={feature.id}>
         <div className="wrap feature-layout"><div className="feature-visual"><img src={assetUrl(feature.imageUrl)} alt={feature.imageAlt} /></div>
-          <div className="feature-copy"><h2>{feature.title}</h2><p>{feature.description}</p><a href={feature.buttonHref} className="button">{feature.buttonLabel}</a></div>
+          <div className="feature-copy"><h2>{feature.title}</h2><p>{feature.description}</p><button type="button" className="button" onClick={() => setActiveFeature(feature)}>{feature.buttonLabel}</button></div>
         </div>
       </section>)}
 
@@ -221,7 +297,7 @@ function App() {
 
       <section className="feature-section feature-secondary" id="product">
         <div className="wrap feature-layout"><div className="feature-visual"><img src={assetUrl(secondaryFeature.imageUrl)} alt={secondaryFeature.imageAlt} /></div>
-          <div className="feature-copy"><h2>{secondaryFeature.title}</h2><p>{secondaryFeature.description}</p><a href={secondaryFeature.buttonHref} className="button">{secondaryFeature.buttonLabel}</a></div>
+          <div className="feature-copy"><h2>{secondaryFeature.title}</h2><p>{secondaryFeature.description}</p><button type="button" className="button" onClick={() => setActiveFeature({ ...secondaryFeature, id: "footer-design" })}>{secondaryFeature.buttonLabel}</button></div>
         </div>
       </section>
 
@@ -257,6 +333,7 @@ function App() {
         </form></div>
       </div>
     </footer>
+    {activeFeature && <FeatureModal feature={activeFeature} onDismiss={() => setActiveFeature(null)} />}
   </>;
 }
 
